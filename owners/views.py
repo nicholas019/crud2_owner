@@ -9,6 +9,7 @@ class OwnerRegister(View):
     def get(self, request):
         result = []
         owner = Owner.objects.all()
+        # 쿼리문이기 때문에 바로 response를 하지못한다 그래서 반복문을 통해 딕셔너리형테로 만들어준뒤에 response를 해야한다.
         for owners in owner:
             result.append(
                 {
@@ -36,6 +37,7 @@ class DogRegister(View):
     def get(self, request):
         result = []
         dog = Dogs.objects.all()
+        # 쿼리문이기 때문에 바로 response를 하지못한다 그래서 반복문을 통해 딕셔너리형테로 만들어준뒤에 response를 해야한다.
         for dogs in dog:
             result.append(
                 {
@@ -60,4 +62,32 @@ class DogRegister(View):
         dogs.save()   
 
         return JsonResponse({'message': '등록되었습니다'}, status=201)
+
+class OwnerList(View):
+    def get(self, request):
+        result = []
+        owner = Owner.objects.all()
+        for owners in owner:
+            dog = owners.dogs_set.all()
+            # 역참조를 할때 _set 사용할땐 models에서 related_name= 속성을 사용할 수 없다.
+            result1 = []
+            for dogs in dog:
+                result1.append(
+                        {
+                            'dog_name': dogs.dog_name,
+                            'dog_age': dogs.dog_age,
+                        }
+                    )    
+            result.append(
+                {
+                    'id':owners.id,
+                    'owner_name': owners.owner_name,
+                    'owner_email': owners.owner_email,
+                    'owner_age': owners.owner_age,
+                    'owner_id':result1,
+                }
+            )
+        
+        return JsonResponse({'owner_doglist':result}, status=200)        
+
 
